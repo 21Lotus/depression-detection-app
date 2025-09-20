@@ -14,6 +14,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { ProgressTracker } from "@/components/ProgressTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-medical.jpg";
 
 const mockProgress = [
@@ -69,6 +70,7 @@ const dashboardItems = [
 
 export default function Dashboard() {
   const [activeCard, setActiveCard] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,7 +143,15 @@ export default function Dashboard() {
             <DashboardCard
               key={item.id}
               {...item}
-              onClick={() => setActiveCard(item.id)}
+              onClick={() => {
+                setActiveCard(item.id);
+                // Navigate to appropriate pages
+                if (item.id === "mdd-info") navigate("/mdd-info");
+                else if (item.id === "sample-prep") navigate("/sample-prep");
+                else if (item.id === "mailing") navigate("/mailing-sample");
+                else if (item.id === "results") navigate("/results");
+                else if (item.id === "activities") navigate("/activity-tracking");
+              }}
               className={activeCard === item.id ? "ring-2 ring-primary" : ""}
             />
           ))}

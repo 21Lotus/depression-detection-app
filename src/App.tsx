@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import SamplePrep from "./pages/SamplePrep";
+import MddInfo from "./pages/MddInfo";
+import MailingSample from "./pages/MailingSample";
+import Results from "./pages/Results";
+import ActivityTracking from "./pages/ActivityTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -18,6 +22,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/sample-prep" element={<SamplePrep />} />
+          <Route path="/mdd-info" element={<MddInfo />} />
+          <Route path="/mailing-sample" element={<MailingSample />} />
+          <Route path="/results" element={<Results />} />
+          <Route path="/activity-tracking" element={<ActivityTracking />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

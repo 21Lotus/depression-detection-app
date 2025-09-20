@@ -193,13 +193,13 @@ export default function SamplePrep() {
         </div>
 
         {/* Important Notes */}
-        <Card className="bg-warning/10 border-warning/20">
+        <Card className="bg-warning border-warning/40 shadow-card">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-5 w-5 text-warning-foreground flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-semibold text-warning-foreground mb-2">Important Notes</h4>
-                <ul className="text-sm text-warning-foreground/80 space-y-1">
+                <ul className="text-sm text-warning-foreground space-y-1">
                   <li>• Collection must be done on an empty stomach</li>
                   <li>• Avoid contamination from food particles</li>
                   <li>• Ship within 24 hours of collection</li>
