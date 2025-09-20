@@ -33,6 +33,7 @@ const dashboardItems = [
     icon: <Brain className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
+    className: "bg-[#57C3AD] text-white",
   },
   {
     id: "sample-prep",
@@ -41,6 +42,7 @@ const dashboardItems = [
     icon: <Droplets className="h-6 w-6 text-primary" />,
     completed: true,
     variant: "success" as const,
+    className: "bg-[#34A798] text-white",
   },
   {
     id: "mailing",
@@ -49,6 +51,7 @@ const dashboardItems = [
     icon: <Send className="h-6 w-6" />,
     completed: true,
     variant: "primary" as const,
+    className: "bg-[#229389] text-white",
   },
   {
     id: "results",
@@ -57,6 +60,7 @@ const dashboardItems = [
     icon: <BarChart3 className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
+    className: "bg-[#008081] text-white",
   },
   {
     id: "activities",
@@ -65,6 +69,7 @@ const dashboardItems = [
     icon: <Activity className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
+    className: "bg-[#007475] text-white",
   },
 ];
 
@@ -111,7 +116,7 @@ export default function Dashboard() {
                 className="w-full h-32 object-cover opacity-20"
               />
               <div className="absolute inset-0 p-4 flex flex-col justify-center">
-                <h2 className="text-lg font-bold mb-1">Welcome back, Sarah</h2>
+                <h2 className="text-lg font-bold mb-1">Welcome back, Ananya</h2>
                 <p className="text-sm text-primary-foreground/80">
                   Your sample is being analyzed. Results expected in 2-3 days.
                 </p>
@@ -152,7 +157,7 @@ export default function Dashboard() {
                 else if (item.id === "results") navigate("/results");
                 else if (item.id === "activities") navigate("/activity-tracking");
               }}
-              className={activeCard === item.id ? "ring-2 ring-primary" : ""}
+              className={'${item.className ?? ""} ${activeCard === item.id ? "ring-2 ring-primary" : ""}'}
             />
           ))}
         </div>
