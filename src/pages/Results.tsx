@@ -105,7 +105,7 @@ export default function Results() {
               </div>
 
               <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                <p className="text-xs text-warning-foreground">
+                <p className="text-xs text-default-foreground">
                   <strong>Important:</strong> These results are for screening purposes only. 
                   Please consult with a healthcare professional for proper diagnosis and treatment.
                 </p>

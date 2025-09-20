@@ -93,8 +93,8 @@ export default function MddInfo() {
                 </div>
               ))}
             </div>
-            <div className="font-semibold text-warning-foreground mb-2">
-              <p className="text-sm text-warning-foreground space-y-1">
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg">
+              <p className="text-xs text-default-foreground">
                 <strong>Note:</strong> If you experience 5 or more of these symptoms for two weeks or longer, 
                 consult with a healthcare professional.
               </p>
@@ -142,7 +142,7 @@ export default function MddInfo() {
               ))}
             </div>
             <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg">
-              <p className="text-xs text-success-foreground">
+              <p className="text-xs text-default-foreground">
                 <strong>Hope:</strong> MDD is highly treatable. With proper care, most people with depression 
                 can recover and return to fulfilling lives.
               </p>

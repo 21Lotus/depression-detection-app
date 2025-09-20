@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import labImage from "@/assets/lab-analysis.jpg";
-import { useNavigate } from "react-router-dom";
-
 
 const preparationSteps = [
   {
@@ -227,15 +225,6 @@ export default function SamplePrep() {
                 className="w-full bg-white/20 text-current border-white/30 hover:bg-white/30"
               >
                 Continue to Shipping
-              </Button>
-
-              {/* Return Button */}
-              <Button
-                variant="outline"
-                className="w-full mb-4"
-                onClick={() => navigate("/")}
-              >
-                Return to Dashboard
               </Button>
 
             </CardContent>
