@@ -17,6 +17,11 @@ const variantStyles = {
   primary: "bg-gradient-primary text-primary-foreground hover:shadow-medical",
   success: "bg-gradient-success text-success-foreground hover:shadow-medical",
   warning: "bg-warning/10 border-warning/20 hover:bg-warning/15",
+  color1: "bg-[#57C3AD] text-primary-foreground",
+  color2: "bg-[#34A798] text-primary-foreground",
+  color3: "bg-[#229389] text-primary-foreground", 
+  color4: "bg-[#008081] text-primary-foreground",
+  color5: "bg-[#007475] text-primary-foreground",
 };
 
 export function DashboardCard({ 

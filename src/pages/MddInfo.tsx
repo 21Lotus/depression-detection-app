@@ -93,8 +93,8 @@ export default function MddInfo() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
-              <p className="text-xs text-warning-foreground">
+            <div className="font-semibold text-warning-foreground mb-2">
+              <p className="text-sm text-warning-foreground space-y-1">
                 <strong>Note:</strong> If you experience 5 or more of these symptoms for two weeks or longer, 
                 consult with a healthcare professional.
               </p>

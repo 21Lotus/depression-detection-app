@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import labImage from "@/assets/lab-analysis.jpg";
+import { useNavigate } from "react-router-dom";
+
 
 const preparationSteps = [
   {
@@ -62,6 +64,7 @@ export default function SamplePrep() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b shadow-card">
+
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm">
@@ -209,7 +212,7 @@ export default function SamplePrep() {
             </div>
           </CardContent>
         </Card>
-
+        
         {/* Next Steps */}
         {completedSteps.length === preparationSteps.length && (
           <Card className="bg-gradient-success text-success-foreground border-0">
@@ -225,9 +228,21 @@ export default function SamplePrep() {
               >
                 Continue to Shipping
               </Button>
+
+              {/* Return Button */}
+              <Button
+                variant="outline"
+                className="w-full mb-4"
+                onClick={() => navigate("/")}
+              >
+                Return to Dashboard
+              </Button>
+
             </CardContent>
           </Card>
         )}
+
+        
       </div>
     </div>
   );

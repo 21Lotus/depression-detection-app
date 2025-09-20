@@ -32,8 +32,7 @@ const dashboardItems = [
     description: "Learn about MDD symptoms, causes, and how early detection can help",
     icon: <Brain className="h-6 w-6 text-primary" />,
     completed: false,
-    variant: "default" as const,
-    className: "bg-[#57C3AD] text-white",
+    variant: "default",
   },
   {
     id: "sample-prep",
@@ -41,8 +40,7 @@ const dashboardItems = [
     description: "Step-by-step guide with video instructions for accurate collection",
     icon: <Droplets className="h-6 w-6 text-primary" />,
     completed: true,
-    variant: "success" as const,
-    className: "bg-[#34A798] text-white",
+    variant: "default",
   },
   {
     id: "mailing",
@@ -50,8 +48,7 @@ const dashboardItems = [
     description: "Shipping instructions, labels, and tracking information",
     icon: <Send className="h-6 w-6" />,
     completed: true,
-    variant: "primary" as const,
-    className: "bg-[#229389] text-white",
+    variant: "default" as const,
   },
   {
     id: "results",
@@ -60,7 +57,6 @@ const dashboardItems = [
     icon: <BarChart3 className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
-    className: "bg-[#008081] text-white",
   },
   {
     id: "activities",
@@ -69,7 +65,6 @@ const dashboardItems = [
     icon: <Activity className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
-    className: "bg-[#007475] text-white",
   },
 ];
 
@@ -116,7 +111,7 @@ export default function Dashboard() {
                 className="w-full h-32 object-cover opacity-20"
               />
               <div className="absolute inset-0 p-4 flex flex-col justify-center">
-                <h2 className="text-lg font-bold mb-1">Welcome back, Ananya</h2>
+                <h2 className="text-lg font-bold mb-1">Welcome back, Sarah</h2>
                 <p className="text-sm text-primary-foreground/80">
                   Your sample is being analyzed. Results expected in 2-3 days.
                 </p>
@@ -157,7 +152,8 @@ export default function Dashboard() {
                 else if (item.id === "results") navigate("/results");
                 else if (item.id === "activities") navigate("/activity-tracking");
               }}
-              className={'${item.className ?? ""} ${activeCard === item.id ? "ring-2 ring-primary" : ""}'}
+              className= {'${item.className ?? ""} ${activeCard === item.id ? "ring-2 ring-primary" : ""}'}
+              variant="default"
             />
           ))}
         </div>
@@ -171,7 +167,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => {}}
+              onClick={() => navigate('/activity-tracking')}
             >
               <Activity className="h-4 w-4 mr-2" />
               Log Today's Mood
@@ -179,7 +175,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => {}}
+              onClick={() => navigate('/activity-tracking')}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               View Recent Trends
