@@ -7,7 +7,8 @@ import {
   Activity,
   Bell,
   User,
-  Menu
+  Menu,
+  Share2
 } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -63,6 +64,14 @@ const dashboardItems = [
     title: "Activity Recommendations",
     description: "Personalized wellness activities based on your mood patterns",
     icon: <Activity className="h-6 w-6 text-primary" />,
+    completed: false,
+    variant: "default" as const,
+  },
+  {
+    id: "share",
+    title: "Share with Doctor",
+    description: "Securely share your results and reports with your healthcare provider",
+    icon: <Share2 className="h-6 w-6 text-primary" />,
     completed: false,
     variant: "default" as const,
   },
@@ -151,6 +160,7 @@ export default function Dashboard() {
                 else if (item.id === "mailing") navigate("/mailing-sample");
                 else if (item.id === "results") navigate("/results");
                 else if (item.id === "activities") navigate("/activity-tracking");
+                else if (item.id === "share") navigate("/share-with-doctor");
               }}
               className= {'${item.className ?? ""} ${activeCard === item.id ? "ring-2 ring-primary" : ""}'}
               variant="default"
@@ -183,9 +193,9 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => navigate('/sending-info')}
+              onClick={() => navigate('/share-with-doctor')}
             >
-              <Send className="h-4 w-4 mr-2" />
+              <Share2 className="h-4 w-4 mr-2" />
               Share with Doctor
             </Button>
           </CardContent>

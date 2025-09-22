@@ -220,13 +220,22 @@ export default function SamplePrep() {
               <p className="text-sm mb-4 text-success-foreground/80">
                 Your sample is properly prepared. Now let's get it to our lab.
               </p>
-              <Button 
-                variant="secondary" 
-                className="w-full bg-white/20 text-current border-white/30 hover:bg-white/30"
-              >
-                Continue to Shipping
-              </Button>
-
+              <div className="space-y-2">
+                <Button 
+                  variant="secondary" 
+                  className="w-full bg-white/20 text-current border-white/30 hover:bg-white/30"
+                  onClick={() => window.location.href = '/mailing-sample'}
+                >
+                  Continue to Shipping
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-white/10 text-current border-white/30 hover:bg-white/20"
+                  onClick={() => window.location.href = '/'}
+                >
+                  Return to Dashboard
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

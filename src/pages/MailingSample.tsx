@@ -2,6 +2,8 @@ import { ArrowLeft, Package, MapPin, Clock, Phone, Mail, CheckCircle } from "luc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const mailingSteps = [
   {
@@ -23,6 +25,7 @@ const mailingSteps = [
 
 export default function MailingSample() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,9 +183,47 @@ export default function MailingSample() {
           </CardContent>
         </Card>
 
+        {/* Confirm Shipment */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="p-4">
+            <h4 className="font-semibold text-primary mb-3">Confirm Sample Shipment</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Once you've shipped your sample, click below to start tracking and receive notifications.
+            </p>
+            <Button 
+              className="w-full"
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase
+                    .from('submissions')
+                    .insert({ user_email: 'user@example.com' })
+                    .select('tracking_id')
+                    .single();
+                  
+                  if (error) throw error;
+                  
+                  toast({
+                    title: "Sample Submitted",
+                    description: `Tracking ID: ${data.tracking_id}`,
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to submit sample tracking.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Confirm Sample Shipped
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button 
+            variant="outline"
             className="w-full"
             onClick={() => navigate('/sample-prep')}
           >
