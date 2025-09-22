@@ -9,7 +9,7 @@ import MddInfo from "./pages/MddInfo";
 import MailingSample from "./pages/MailingSample";
 import Results from "./pages/Results";
 import ActivityTracking from "./pages/ActivityTracking";
-import SendingInfo from "./pages/SendingInfo";
+//import SendingInfo from "./pages/SendingInfo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +26,7 @@ const App = () => (
           <Route path="/mdd-info" element={<MddInfo />} />
           <Route path="/mailing-sample" element={<MailingSample />} />
           <Route path="/results" element={<Results />} />
-          <Route path="/sending-info" element={<SendingInfo />} />
+          {/*<Route path="/sending-info" element={<SendingInfo />} />*/}
           <Route path="/activity-tracking" element={<ActivityTracking />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
