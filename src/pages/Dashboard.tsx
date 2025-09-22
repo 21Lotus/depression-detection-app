@@ -183,10 +183,10 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => {}}
+              onClick={() => navigate('/sending-info')}
             >
               <Send className="h-4 w-4 mr-2" />
-              Share with Provider
+              Share with Doctor
             </Button>
           </CardContent>
         </Card>
