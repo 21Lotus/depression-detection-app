@@ -63,11 +63,17 @@ export default function Onboarding() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: `temp_${Math.random().toString(36).substr(2, 9)}`, // Temporary password
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        }
       });
 
       if (authError) throw authError;
 
       if (authData.user) {
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Save profile data
         const { error: profileError } = await supabase
           .from('profiles')
@@ -87,7 +93,10 @@ export default function Onboarding() {
             onboarding_completed: true,
           });
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw profileError;
+        }
 
         toast({
           title: "Welcome!",
@@ -96,11 +105,20 @@ export default function Onboarding() {
 
         navigate('/');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Onboarding error:', error);
+      
+      let errorMessage = "There was a problem creating your profile. Please try again.";
+      
+      if (error?.code === 'over_email_send_rate_limit') {
+        errorMessage = "Please wait a moment before trying again due to rate limiting.";
+      } else if (error?.message?.includes('row-level security')) {
+        errorMessage = "Authentication setup issue. Please wait a moment and try again.";
+      }
+      
       toast({
         title: "Error",
-        description: "There was a problem creating your profile. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
