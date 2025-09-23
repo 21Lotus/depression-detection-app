@@ -103,7 +103,8 @@ export default function Onboarding() {
           description: "Your profile has been created successfully.",
         });
 
-        navigate('/');
+        // Force a page reload to ensure proper authentication state
+        window.location.href = '/';
       }
     } catch (error: any) {
       console.error('Onboarding error:', error);

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data for demonstration
 const analysisResults = {
@@ -46,6 +47,51 @@ const recommendations = [
 
 export default function Results() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const downloadReport = () => {
+    // Create a simple text report for download
+    const reportContent = `
+MindWell Depression Detection Report
+===================================
+
+Analysis Date: ${new Date().toLocaleDateString()}
+Sample ID: MDD-2024-001285
+
+DIAGNOSIS RISK: ${analysisResults.diagnosisRisk}
+Risk Level: ${analysisResults.riskLevel}%
+Confidence: ${analysisResults.confidence}%
+
+KEY BIOMARKERS:
+${analysisResults.keyBiomarkers.map(marker => 
+  `• ${marker.name}: ${marker.level} (${marker.result}, Normal: ${marker.normal})`
+).join('\n')}
+
+METABOLOMICS INSIGHTS:
+${analysisResults.metabolomicsInsights.map(insight => `• ${insight}`).join('\n')}
+
+RECOMMENDATIONS:
+${recommendations.map(rec => `• ${rec.title}: ${rec.description}`).join('\n')}
+
+Laboratory: ASU Mass Spectrometry Facility
+Method: LC-MS/MS Metabolomics
+    `;
+
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MindWell_Report_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Report Downloaded",
+      description: "Your full analysis report has been downloaded successfully.",
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -186,7 +232,7 @@ export default function Results() {
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          <Button className="w-full">
+          <Button className="w-full" onClick={downloadReport}>
             <Download className="h-4 w-4 mr-2" />
             Download Full Report
           </Button>

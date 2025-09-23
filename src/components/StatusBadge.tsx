@@ -1,11 +1,15 @@
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
-  status: "collected" | "shipped" | "delivered" | "analyzed" | "ready";
+  status: "pending" | "collected" | "shipped" | "delivered" | "analyzed" | "ready";
   className?: string;
 }
 
 const statusConfig = {
+  pending: {
+    label: "Pending",
+    variant: "bg-muted text-muted-foreground",
+  },
   collected: {
     label: "Sample Collected",
     variant: "bg-muted text-muted-foreground",

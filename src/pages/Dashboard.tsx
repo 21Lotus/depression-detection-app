@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Brain, 
   Droplets, 
@@ -16,15 +16,40 @@ import { ProgressTracker } from "@/components/ProgressTracker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-medical.jpg";
 
-const mockProgress = [
-  { id: "1", label: "Sample Collected", completed: true },
-  { id: "2", label: "Shipped to Lab", completed: true },
-  { id: "3", label: "Lab Received", completed: true },
-  { id: "4", label: "Analysis in Progress", completed: false, current: true },
-  { id: "5", label: "Results Available", completed: false },
-];
+const getProgressSteps = (status: string, hasSubmitted: boolean) => {
+  if (!hasSubmitted) {
+    return [
+      { id: "1", label: "Sample Collected", completed: false },
+      { id: "2", label: "Shipped to Lab", completed: false },
+      { id: "3", label: "Lab Received", completed: false },
+      { id: "4", label: "Analysis in Progress", completed: false },
+      { id: "5", label: "Results Available", completed: false },
+    ];
+  }
+
+  const baseSteps = [
+    { id: "1", label: "Sample Collected", completed: true },
+    { id: "2", label: "Shipped to Lab", completed: true },
+    { id: "3", label: "Lab Received", completed: true },
+  ];
+
+  if (status === "analyzed") {
+    return [
+      ...baseSteps,
+      { id: "4", label: "Analysis in Progress", completed: true },
+      { id: "5", label: "Results Available", completed: true, current: true },
+    ];
+  } else {
+    return [
+      ...baseSteps,
+      { id: "4", label: "Analysis in Progress", completed: false, current: true },
+      { id: "5", label: "Results Available", completed: false },
+    ];
+  }
+};
 
 const dashboardItems = [
   {
@@ -53,7 +78,7 @@ const dashboardItems = [
   },
   {
     id: "results",
-    title: "Results: Data Insights & Analytics",
+    title: "Results: Data Insights & Analytics", 
     description: "View your metabolomic analysis and personalized health insights",
     icon: <BarChart3 className="h-6 w-6 text-primary" />,
     completed: false,
@@ -79,7 +104,58 @@ const dashboardItems = [
 
 export default function Dashboard() {
   const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [submissionStatus, setSubmissionStatus] = useState<string>("pending");
+  const [hasSubmission, setHasSubmission] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUserProfile();
+    fetchSubmissionStatus();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!error && data) {
+          setUserProfile(data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const fetchSubmissionStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('submissions')
+          .select('status')
+          .eq('user_email', user.email)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (!error && data && data.length > 0) {
+          setSubmissionStatus(data[0].status);
+          setHasSubmission(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching submission status:', error);
+    }
+  };
+
+  const userName = userProfile?.full_name || "there";
+  const progressSteps = getProgressSteps(submissionStatus, hasSubmission);
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,9 +196,14 @@ export default function Dashboard() {
                 className="w-full h-32 object-cover opacity-20"
               />
               <div className="absolute inset-0 p-4 flex flex-col justify-center">
-                <h2 className="text-lg font-bold mb-1">Welcome back, Sarah</h2>
+                <h2 className="text-lg font-bold mb-1">Welcome back, {userName}</h2>
                 <p className="text-sm text-primary-foreground/80">
-                  Your sample is being analyzed. Results expected in 2-3 days.
+                  {submissionStatus === "analyzed" 
+                    ? "Your results are ready! Check out your analysis below."
+                    : hasSubmission 
+                    ? "Your sample is being analyzed. Results expected in 2-3 days."
+                    : "Ready to begin your health journey? Start by preparing your sample."
+                  }
                 </p>
               </div>
             </div>
@@ -134,11 +215,11 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-base">Sample Status</span>
-              <StatusBadge status="analyzed" />
+              <StatusBadge status={hasSubmission ? (submissionStatus as "pending" | "analyzed") : "pending"} />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ProgressTracker steps={mockProgress} />
+            <ProgressTracker steps={progressSteps} />
           </CardContent>
         </Card>
 
