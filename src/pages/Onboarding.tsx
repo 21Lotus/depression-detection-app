@@ -59,64 +59,111 @@ export default function Onboarding() {
 
   const completeOnboarding = async () => {
     try {
-      // Sign up the user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: `temp_${Math.random().toString(36).substr(2, 9)}`, // Temporary password
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        }
-      });
+      // 1) Check if a user session already exists
+      const { data: userData } = await supabase.auth.getUser();
+      let userId: string | null = userData.user?.id ?? null;
+      let userEmail: string = userData.user?.email ?? data.email;
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Wait a moment for the session to be established
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Save profile data
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
-            full_name: data.fullName,
-            age: parseInt(data.age),
-            email: data.email,
-            gender: data.gender,
-            medical_history: data.medicalHistory,
-            current_medications: data.currentMedications,
-            alert_preferences: {
-              email_alerts: data.emailAlerts,
-              critical_alerts: data.criticalAlerts,
-              analysis_alerts: data.analysisAlerts,
-            },
-            onboarding_completed: true,
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw profileError;
-        }
-
-        toast({
-          title: "Welcome!",
-          description: "Your profile has been created successfully.",
+      // 2) If no active session, try to sign up; if the user already exists, send magic link instead
+      if (!userId) {
+        const tempPassword = `temp_${Math.random().toString(36).substr(2, 9)}`;
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password: tempPassword,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
         });
 
-        // Force a page reload to ensure proper authentication state
-        window.location.href = '/';
+        if (authError) {
+          // Handle existing user gracefully: send a magic link to log in
+          if ((authError as any)?.code === 'user_already_exists') {
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+              email: data.email,
+              options: { emailRedirectTo: `${window.location.origin}/` },
+            });
+
+            if (otpError) throw otpError;
+
+            toast({
+              title: "Check your email",
+              description: "We sent you a secure login link to continue onboarding.",
+            });
+            return; // Stop here; user will continue after logging in
+          }
+
+          throw authError;
+        }
+
+        userId = authData.user?.id ?? null;
+        userEmail = data.email;
+
+        // Wait a moment for the session to be established
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
+
+      if (!userId) throw new Error('No authenticated user available to save profile.');
+
+      // 3) Create or update profile
+      const { data: existing, error: selectError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (selectError && (selectError as any).code !== 'PGRST116') {
+        throw selectError;
+      }
+
+      const baseProfile = {
+        user_id: userId,
+        full_name: data.fullName,
+        age: data.age ? parseInt(data.age) : null,
+        email: userEmail,
+        gender: data.gender,
+        medical_history: data.medicalHistory,
+        current_medications: data.currentMedications,
+        alert_preferences: {
+          email_alerts: data.emailAlerts,
+          critical_alerts: data.criticalAlerts,
+          analysis_alerts: data.analysisAlerts,
+        },
+        onboarding_completed: true,
+      } as const;
+
+      if (existing && existing.length > 0) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update(baseProfile)
+          .eq('user_id', userId);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert(baseProfile);
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: "Welcome!",
+        description: "Your profile has been created successfully.",
+      });
+
+      // 4) Navigate to home
+      window.location.href = '/';
     } catch (error: any) {
       console.error('Onboarding error:', error);
-      
+
       let errorMessage = "There was a problem creating your profile. Please try again.";
-      
+
       if (error?.code === 'over_email_send_rate_limit') {
         errorMessage = "Please wait a moment before trying again due to rate limiting.";
       } else if (error?.message?.includes('row-level security')) {
         errorMessage = "Authentication setup issue. Please wait a moment and try again.";
+      } else if (error?.code === 'user_already_exists') {
+        errorMessage = "This email is already registered. We sent you a login link.";
       }
-      
+
       toast({
         title: "Error",
         description: errorMessage,
