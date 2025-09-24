@@ -8,7 +8,8 @@ import {
   Bell,
   User,
   Menu,
-  Share2
+  Share2,
+  CheckCircle
 } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -17,12 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeSubmissions } from "@/hooks/useRealtimeSubmissions";
 import heroImage from "@/assets/hero-medical.jpg";
 
-const getProgressSteps = (status: string, hasSubmitted: boolean) => {
+const getProgressSteps = (status: string, hasSubmitted: boolean, sampleCollected: boolean) => {
   if (!hasSubmitted) {
     return [
-      { id: "1", label: "Sample Collected", completed: false },
+      { id: "1", label: "Sample Collected", completed: sampleCollected },
       { id: "2", label: "Shipped to Lab", completed: false },
       { id: "3", label: "Lab Received", completed: false },
       { id: "4", label: "Analysis in Progress", completed: false },
@@ -32,22 +34,26 @@ const getProgressSteps = (status: string, hasSubmitted: boolean) => {
 
   const baseSteps = [
     { id: "1", label: "Sample Collected", completed: true },
-    { id: "2", label: "Shipped to Lab", completed: true },
-    { id: "3", label: "Lab Received", completed: true },
+    { id: "2", label: "Shipped to Lab", completed: status !== 'pending' },
+    { id: "3", label: "Lab Received", completed: ['delivered', 'analyzed'].includes(status) },
+    { id: "4", label: "Analysis in Progress", completed: status === 'analyzed' },
+    { id: "5", label: "Results Available", completed: status === 'analyzed' },
   ];
 
   if (status === "analyzed") {
-    return [
-      ...baseSteps,
-      { id: "4", label: "Analysis in Progress", completed: true },
-      { id: "5", label: "Results Available", completed: true, current: true },
-    ];
+    return baseSteps.map((step, index) => 
+      index === 4 ? { ...step, current: true } : step
+    );
+  } else if (status === "delivered") {
+    return baseSteps.map((step, index) => 
+      index === 3 ? { ...step, current: true } : step
+    );
+  } else if (status === "shipped") {
+    return baseSteps.map((step, index) => 
+      index === 1 ? { ...step, current: true } : step
+    );
   } else {
-    return [
-      ...baseSteps,
-      { id: "4", label: "Analysis in Progress", completed: false, current: true },
-      { id: "5", label: "Results Available", completed: false },
-    ];
+    return baseSteps;
   }
 };
 
@@ -105,14 +111,21 @@ const dashboardItems = [
 export default function Dashboard() {
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [submissionStatus, setSubmissionStatus] = useState<string>("pending");
-  const [hasSubmission, setHasSubmission] = useState(false);
+  const [sampleCollected, setSampleCollected] = useState(false);
   const navigate = useNavigate();
+
+  // Use realtime submissions hook
+  const { submissionStatus, hasSubmission } = useRealtimeSubmissions(userProfile?.email);
 
   useEffect(() => {
     fetchUserProfile();
-    fetchSubmissionStatus();
+    checkSampleCollected();
   }, []);
+
+  const checkSampleCollected = () => {
+    const collected = localStorage.getItem('sampleCollected');
+    setSampleCollected(collected === 'true');
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -133,29 +146,9 @@ export default function Dashboard() {
     }
   };
 
-  const fetchSubmissionStatus = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from('submissions')
-          .select('status')
-          .eq('user_email', user.email)
-          .order('created_at', { ascending: false })
-          .limit(1);
-        
-        if (!error && data && data.length > 0) {
-          setSubmissionStatus(data[0].status);
-          setHasSubmission(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching submission status:', error);
-    }
-  };
 
   const userName = userProfile?.full_name || "there";
-  const progressSteps = getProgressSteps(submissionStatus, hasSubmission);
+  const progressSteps = getProgressSteps(submissionStatus, hasSubmission, sampleCollected);
 
   return (
     <div className="min-h-screen bg-background">
@@ -249,38 +242,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              onClick={() => navigate('/activity-tracking')}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Log Today's Mood
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              onClick={() => navigate('/activity-tracking')}
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              View Recent Trends
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              onClick={() => navigate('/share-with-doctor')}
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share with Doctor
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

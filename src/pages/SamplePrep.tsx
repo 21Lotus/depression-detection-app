@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, Play, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Play, CheckCircle, Clock, AlertCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -46,6 +46,13 @@ const preparationSteps = [
 export default function SamplePrep() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Check if all steps are completed and mark sample as collected
+    if (completedSteps.length === preparationSteps.length && completedSteps.length > 0) {
+      localStorage.setItem('sampleCollected', 'true');
+    }
+  }, [completedSteps]);
 
   const markStepComplete = (stepId: number) => {
     if (!completedSteps.includes(stepId)) {
@@ -102,25 +109,32 @@ export default function SamplePrep() {
         <Card>
           <CardContent className="p-0">
             <div className="relative">
-              <img 
-                src={labImage} 
-                alt="Saliva collection process"
-                className="w-full h-48 object-cover rounded-t-lg"
-              />
-              <div className="absolute inset-0 bg-black/40 rounded-t-lg flex items-center justify-center">
-                <Button 
-                  size="lg" 
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                >
-                  <Play className="h-6 w-6 mr-2" />
-                  Watch Tutorial
-                </Button>
-              </div>
+              <iframe
+                className="w-full h-48 rounded-t-lg"
+                src="https://www.youtube.com/embed/VtweFyMC9Ag"
+                title="Saliva Collection Tutorial"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
             <div className="p-4">
-              <h3 className="font-semibold mb-2">Video Guide</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">Video Guide</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('https://www.youtube.com/watch?v=VtweFyMC9Ag', '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  Open in YouTube
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Step-by-step visual instructions for proper saliva collection
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Video source: YouTube - Educational content for medical sample collection
               </p>
             </div>
           </CardContent>

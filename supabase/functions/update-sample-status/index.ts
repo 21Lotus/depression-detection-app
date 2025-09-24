@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface StatusUpdateRequest {
+  userEmail: string
+  status: 'pending' | 'collected' | 'shipped' | 'delivered' | 'analyzed'
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -17,12 +22,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const url = new URL(req.url)
-    const tracking_id = url.searchParams.get('tracking_id')
+    const { userEmail, status }: StatusUpdateRequest = await req.json()
 
-    if (!tracking_id) {
+    if (!userEmail || !status) {
       return new Response(
-        JSON.stringify({ error: 'Tracking ID is required' }),
+        JSON.stringify({ error: 'Missing userEmail or status' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -30,28 +34,31 @@ serve(async (req) => {
       )
     }
 
-    // Get submission status (excluding email for privacy)
+    // Update the submission status
     const { data, error } = await supabase
       .from('submissions')
-      .select('tracking_id, status, analyzed_at, created_at')
-      .eq('tracking_id', tracking_id)
+      .update({ 
+        status,
+        updated_at: new Date().toISOString(),
+        ...(status === 'analyzed' ? { analyzed_at: new Date().toISOString() } : {})
+      })
+      .eq('user_email', userEmail)
+      .select('tracking_id, status')
       .single()
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return new Response(
-          JSON.stringify({ error: 'Sample not found' }),
-          { 
-            status: 404, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
+      console.error('Database error:', error)
       throw error
     }
 
+    console.log(`Sample status updated to ${status} for user ${userEmail}`)
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ 
+        success: true, 
+        tracking_id: data.tracking_id,
+        status: data.status 
+      }),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -59,6 +66,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Error in update-sample-status function:', error)
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
       { 

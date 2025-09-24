@@ -194,19 +194,31 @@ export default function MailingSample() {
               className="w-full"
               onClick={async () => {
                 try {
-                  const { data, error } = await supabase
-                    .from('submissions')
-                    .insert({ user_email: 'user@example.com' })
-                    .select('tracking_id')
-                    .single();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user?.email) {
+                    throw new Error('User not authenticated');
+                  }
+
+                  const { data, error } = await supabase.functions.invoke('submit-sample', {
+                    body: { email: user.email }
+                  });
                   
                   if (error) throw error;
                   
+                  // Update status to shipped
+                  await supabase.functions.invoke('update-sample-status', {
+                    body: { 
+                      userEmail: user.email,
+                      status: 'shipped'
+                    }
+                  });
+                  
                   toast({
                     title: "Sample Submitted",
-                    description: `Tracking ID: ${data.tracking_id}`,
+                    description: `Tracking ID: ${data.tracking_id}. Your sample status has been updated to "Shipped to Lab".`,
                   });
                 } catch (error) {
+                  console.error('Submission error:', error);
                   toast({
                     title: "Error",
                     description: "Failed to submit sample tracking.",
