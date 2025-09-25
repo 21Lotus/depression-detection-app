@@ -11,6 +11,8 @@ import MailingSample from "./pages/MailingSample";
 import Results from "./pages/Results";
 import ActivityTracking from "./pages/ActivityTracking";
 import ShareWithDoctor from "./pages/ShareWithDoctor";
+import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/results" element={<Results />} />
             <Route path="/activity-tracking" element={<ActivityTracking />} />
             <Route path="/share-with-doctor" element={<ShareWithDoctor />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/notifications" element={<Notifications />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

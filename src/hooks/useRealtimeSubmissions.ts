@@ -55,10 +55,26 @@ export function useRealtimeSubmissions(userEmail: string | null) {
           }
 
           if (statusMessages[newStatus as keyof typeof statusMessages]) {
+            const message = statusMessages[newStatus as keyof typeof statusMessages];
+            
             toast({
               title: 'Sample Status Update',
-              description: statusMessages[newStatus as keyof typeof statusMessages],
-            })
+              description: message,
+            });
+
+            // Save notification to localStorage
+            const notification = {
+              id: Date.now().toString(),
+              title: 'Sample Status Update',
+              message,
+              type: newStatus === 'analyzed' ? 'success' : 'info',
+              timestamp: new Date(),
+              read: false,
+            };
+
+            const existing = JSON.parse(localStorage.getItem('mindwell_notifications') || '[]');
+            existing.push(notification);
+            localStorage.setItem('mindwell_notifications', JSON.stringify(existing));
           }
         }
       )

@@ -51,6 +51,20 @@ export default function SamplePrep() {
     // Check if all steps are completed and mark sample as collected
     if (completedSteps.length === preparationSteps.length && completedSteps.length > 0) {
       localStorage.setItem('sampleCollected', 'true');
+      
+      // Add notification
+      const notification = {
+        id: Date.now().toString(),
+        title: 'Sample Collection Complete',
+        message: 'All preparation steps completed! Your sample is ready for shipping.',
+        type: 'success',
+        timestamp: new Date(),
+        read: false,
+      };
+      
+      const existing = JSON.parse(localStorage.getItem('mindwell_notifications') || '[]');
+      existing.push(notification);
+      localStorage.setItem('mindwell_notifications', JSON.stringify(existing));
     }
   }, [completedSteps]);
 

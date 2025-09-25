@@ -32,21 +32,28 @@ const getProgressSteps = (status: string, hasSubmitted: boolean, sampleCollected
     ];
   }
 
+  // When status is "analyzed", all steps are completed (green)
+  if (status === "analyzed") {
+    return [
+      { id: "1", label: "Sample Collected", completed: true },
+      { id: "2", label: "Shipped to Lab", completed: true },
+      { id: "3", label: "Lab Received", completed: true },
+      { id: "4", label: "Analysis in Progress", completed: true },
+      { id: "5", label: "Results Available", completed: true, current: true },
+    ];
+  }
+
   const baseSteps = [
     { id: "1", label: "Sample Collected", completed: true },
-    { id: "2", label: "Shipped to Lab", completed: status !== 'pending' },
+    { id: "2", label: "Shipped to Lab", completed: ['shipped', 'delivered', 'analyzed'].includes(status) },
     { id: "3", label: "Lab Received", completed: ['delivered', 'analyzed'].includes(status) },
-    { id: "4", label: "Analysis in Progress", completed: status === 'analyzed' },
-    { id: "5", label: "Results Available", completed: status === 'analyzed' },
+    { id: "4", label: "Analysis in Progress", completed: false },
+    { id: "5", label: "Results Available", completed: false },
   ];
 
-  if (status === "analyzed") {
+  if (status === "delivered") {
     return baseSteps.map((step, index) => 
-      index === 4 ? { ...step, current: true } : step
-    );
-  } else if (status === "delivered") {
-    return baseSteps.map((step, index) => 
-      index === 3 ? { ...step, current: true } : step
+      index === 2 ? { ...step, current: true } : step
     );
   } else if (status === "shipped") {
     return baseSteps.map((step, index) => 
@@ -167,10 +174,10 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/notifications')}>
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
                 <User className="h-5 w-5" />
               </Button>
             </div>

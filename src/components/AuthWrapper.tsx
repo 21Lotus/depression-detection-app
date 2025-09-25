@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Onboarding from '@/pages/Onboarding';
+import Auth from '@/pages/Auth';
 import { User } from '@supabase/supabase-js';
 
 interface AuthWrapperProps {
@@ -68,8 +69,13 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     );
   }
 
-  // Show onboarding if user doesn't exist or hasn't completed profile
-  if (!user || !hasProfile) {
+  // Show auth if no user
+  if (!user) {
+    return <Auth />;
+  }
+
+  // Show onboarding if user hasn't completed profile
+  if (!hasProfile) {
     return <Onboarding />;
   }
 
