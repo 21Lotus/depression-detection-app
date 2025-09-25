@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeSubmissions } from "@/hooks/useRealtimeSubmissions";
+import { StatusUpdateButton } from "@/components/StatusUpdateButton";
 import heroImage from "@/assets/hero-medical.jpg";
 
 const getProgressSteps = (status: string, hasSubmitted: boolean, sampleCollected: boolean) => {
@@ -123,6 +124,20 @@ export default function Dashboard() {
 
   // Use realtime submissions hook
   const { submissionStatus, hasSubmission } = useRealtimeSubmissions(userProfile?.email);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const updateUnreadCount = () => {
+      const notifications = JSON.parse(localStorage.getItem('mindwell_notifications') || '[]');
+      const unread = notifications.filter((n: any) => !n.read).length;
+      setUnreadCount(unread);
+    };
+
+    updateUnreadCount();
+    window.addEventListener('storage', updateUnreadCount);
+    
+    return () => window.removeEventListener('storage', updateUnreadCount);
+  }, []);
 
   useEffect(() => {
     fetchUserProfile();
@@ -174,8 +189,20 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/notifications')}>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/notifications')}
+                className="relative"
+              >
                 <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
+                    <span className="text-xs text-destructive-foreground font-bold">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  </div>
+                )}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
                 <User className="h-5 w-5" />
@@ -215,7 +242,15 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-base">Sample Status</span>
-              <StatusBadge status={hasSubmission ? (submissionStatus as "pending" | "analyzed") : "pending"} />
+              <div className="flex items-center gap-2">
+                <StatusBadge status={hasSubmission ? (submissionStatus as "pending" | "analyzed") : "pending"} />
+                {hasSubmission && userProfile?.email && (
+                  <StatusUpdateButton 
+                    userEmail={userProfile.email} 
+                    currentStatus={submissionStatus}
+                  />
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>

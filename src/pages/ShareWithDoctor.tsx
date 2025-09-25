@@ -138,6 +138,8 @@ export default function ShareWithDoctor() {
         }
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) throw error;
 
       toast({
