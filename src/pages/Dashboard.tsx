@@ -34,7 +34,7 @@ const getProgressSteps = (status: string, hasSubmitted: boolean, sampleCollected
   }
 
   // When status is "analyzed", all steps are completed (green)
-  if (status === "analyzed") {
+  if (status === "analyzed" || status === "done") {
     return [
       { id: "1", label: "Sample Collected", completed: true },
       { id: "2", label: "Shipped to Lab", completed: true },
@@ -46,8 +46,8 @@ const getProgressSteps = (status: string, hasSubmitted: boolean, sampleCollected
 
   const baseSteps = [
     { id: "1", label: "Sample Collected", completed: true },
-    { id: "2", label: "Shipped to Lab", completed: ['shipped', 'delivered', 'analyzed'].includes(status) },
-    { id: "3", label: "Lab Received", completed: ['delivered', 'analyzed'].includes(status) },
+    { id: "2", label: "Shipped to Lab", completed: ['shipped', 'delivered', 'analyzed', 'done'].includes(status) },
+    { id: "3", label: "Lab Received", completed: ['delivered', 'analyzed', 'done'].includes(status) },
     { id: "4", label: "Analysis in Progress", completed: false },
     { id: "5", label: "Results Available", completed: false },
   ];
@@ -225,7 +225,7 @@ export default function Dashboard() {
               <div className="absolute inset-0 p-4 flex flex-col justify-center">
                 <h2 className="text-lg font-bold mb-1">Welcome back, {userName}</h2>
                 <p className="text-sm text-primary-foreground/80">
-                  {submissionStatus === "analyzed" 
+                  {(submissionStatus === "analyzed" || submissionStatus === "done") 
                     ? "Your results are ready! Check out your analysis below."
                     : hasSubmission 
                     ? "Your sample is being analyzed. Results expected in 2-3 days."
@@ -243,11 +243,11 @@ export default function Dashboard() {
             <CardTitle className="flex items-center justify-between">
               <span className="text-base">Sample Status</span>
               <div className="flex items-center gap-2">
-                <StatusBadge status={hasSubmission ? (submissionStatus as "pending" | "analyzed") : "pending"} />
+                <StatusBadge status={hasSubmission ? ((submissionStatus === 'done' ? 'analyzed' : submissionStatus) as "pending" | "analyzed") : "pending"} />
                 {hasSubmission && userProfile?.email && (
                   <StatusUpdateButton 
                     userEmail={userProfile.email} 
-                    currentStatus={submissionStatus}
+                    currentStatus={submissionStatus === 'done' ? 'analyzed' : submissionStatus}
                   />
                 )}
               </div>

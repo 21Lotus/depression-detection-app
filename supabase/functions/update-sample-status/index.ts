@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface StatusUpdateRequest {
   userEmail: string
-  status: 'pending' | 'collected' | 'shipped' | 'delivered' | 'analyzed'
+  status: 'pending' | 'collected' | 'shipped' | 'delivered' | 'analyzed' | 'done'
 }
 
 serve(async (req) => {
@@ -34,17 +34,15 @@ serve(async (req) => {
       )
     }
 
-    // Update the submission status
-    const { data, error } = await supabase
+    // Update the submission status for all submissions of this user
+    const { error } = await supabase
       .from('submissions')
       .update({ 
         status,
         updated_at: new Date().toISOString(),
-        ...(status === 'analyzed' ? { analyzed_at: new Date().toISOString() } : {})
+        ...(['analyzed', 'done'].includes(status) ? { analyzed_at: new Date().toISOString() } : {})
       })
       .eq('user_email', userEmail)
-      .select('tracking_id, status')
-      .single()
 
     if (error) {
       console.error('Database error:', error)
@@ -54,11 +52,7 @@ serve(async (req) => {
     console.log(`Sample status updated to ${status} for user ${userEmail}`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        tracking_id: data.tracking_id,
-        status: data.status 
-      }),
+      JSON.stringify({ success: true }),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
