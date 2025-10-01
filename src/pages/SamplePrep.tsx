@@ -3,6 +3,8 @@ import { ArrowLeft, Play, CheckCircle, Clock, AlertCircle, ExternalLink } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import labImage from "@/assets/lab-analysis.jpg";
 
 const preparationSteps = [
@@ -46,10 +48,34 @@ const preparationSteps = [
 export default function SamplePrep() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if all steps are completed and mark sample as collected
     if (completedSteps.length === preparationSteps.length && completedSteps.length > 0) {
+      handleSampleSubmission();
+    }
+  }, [completedSteps]);
+
+  const handleSampleSubmission = async () => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
+        throw new Error('User email not found');
+      }
+
+      const { data, error } = await supabase.functions.invoke('submit-sample', {
+        body: { email: user.email }
+      });
+
+      if (error) throw error;
+
       localStorage.setItem('sampleCollected', 'true');
       
       // Add notification
@@ -65,8 +91,22 @@ export default function SamplePrep() {
       const existing = JSON.parse(localStorage.getItem('mindwell_notifications') || '[]');
       existing.push(notification);
       localStorage.setItem('mindwell_notifications', JSON.stringify(existing));
+
+      toast({
+        title: "Sample Submitted",
+        description: "Your sample tracking has been created successfully!",
+      });
+    } catch (error) {
+      console.error('Error submitting sample:', error);
+      toast({
+        title: "Submission Failed",
+        description: "Failed to submit sample tracking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [completedSteps]);
+  };
 
   const markStepComplete = (stepId: number) => {
     if (!completedSteps.includes(stepId)) {

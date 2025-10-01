@@ -44,7 +44,7 @@ serve(async (req) => {
     const pdfBuffer = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))
 
     const { data, error } = await resend.emails.send({
-      from: 'MindWell Reports <noreply@mindwell.app>',
+      from: 'MindWell Reports <onboarding@resend.dev>',
       to: [doctorEmail],
       subject: `MindWell Health Report for Patient: ${userEmail}`,
       html: `

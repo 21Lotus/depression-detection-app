@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Onboarding from '@/pages/Onboarding';
-import Auth from '@/pages/Auth';
 import { User } from '@supabase/supabase-js';
 
-interface AuthWrapperProps {
-  children: React.ReactNode;
-}
-
-export default function AuthWrapper({ children }: AuthWrapperProps) {
+export default function AuthWrapper() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
@@ -69,9 +65,9 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     );
   }
 
-  // Show auth if no user
+  // Redirect to auth if no user
   if (!user) {
-    return <Auth />;
+    return <Navigate to="/auth" replace />;
   }
 
   // Show onboarding if user hasn't completed profile
@@ -79,5 +75,5 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     return <Onboarding />;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 }
