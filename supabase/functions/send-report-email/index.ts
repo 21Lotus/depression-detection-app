@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"))
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || 'MindWell Reports <onboarding@resend.dev>'
 
 interface EmailRequest {
   doctorName: string
@@ -45,7 +44,7 @@ serve(async (req) => {
     const pdfBuffer = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))
 
     const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from: 'MindWell Reports <onboarding@resend.dev>',
       reply_to: 'anan.lakk21@gmail.com',
       to: [doctorEmail],
       subject: `MindWell Health Report for Patient: ${userEmail}`,
