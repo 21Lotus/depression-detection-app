@@ -44,7 +44,7 @@ serve(async (req) => {
     const pdfBuffer = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))
 
     const { data, error } = await resend.emails.send({
-      from: 'anan.lakk21@gmail.com',
+      from: 'MindWell Reports <onboarding@resend.dev>',
       reply_to: 'anan.lakk21@gmail.com',
       to: [doctorEmail],
       subject: `MindWell Health Report for Patient: ${userEmail}`,
@@ -80,6 +80,7 @@ serve(async (req) => {
         {
           filename: `MindWell_Report_${new Date().toISOString().split('T')[0]}.pdf`,
           content: pdfBase64,
+          contentType: 'application/pdf',
         }
       ]
     })
