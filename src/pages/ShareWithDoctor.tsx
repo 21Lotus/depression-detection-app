@@ -49,29 +49,26 @@ export default function ShareWithDoctor() {
           });
         }
 
-        // Fetch mock activities (in a real app, these would come from the database)
-        setActivities([
-          {
-            id: "1",
-            date: "2024-01-15",
-            activity: "Morning yoga",
-            category: "exercise",
-            duration: 30,
-            moodBefore: 2,
-            moodAfter: 4,
-            notes: "Felt more centered after practice"
-          },
-          {
-            id: "2", 
-            date: "2024-01-14",
-            activity: "Coffee with friends",
-            category: "social",
-            duration: 120,
-            moodBefore: 3,
-            moodAfter: 4,
-            notes: "Great conversation, felt supported"
-          }
-        ]);
+        // Fetch real activities from database
+        const { data: activitiesData, error: activitiesError } = await supabase
+          .from('activities')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (!activitiesError && activitiesData) {
+          const formattedActivities: ActivityEntry[] = activitiesData.map(a => ({
+            id: a.id,
+            date: a.date,
+            activity: a.activity,
+            category: a.category,
+            duration: a.duration,
+            moodBefore: a.mood_before,
+            moodAfter: a.mood_after,
+            notes: a.notes || ""
+          }));
+          setActivities(formattedActivities);
+        }
       }
     } catch (error) {
       console.error('Error fetching user data:', error);

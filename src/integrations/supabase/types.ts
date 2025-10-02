@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity: string
+          category: string
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          mood_after: number
+          mood_before: number
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          activity: string
+          category: string
+          created_at?: string
+          date: string
+          duration: number
+          id?: string
+          mood_after: number
+          mood_before: number
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          activity?: string
+          category?: string
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          mood_after?: number
+          mood_before?: number
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null

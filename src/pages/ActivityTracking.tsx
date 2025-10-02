@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Calendar, TrendingUp, Smile, Frown, Meh, Activity, Coffee, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ActivityEntry {
   id: string;
@@ -34,34 +36,13 @@ const activityCategories = [
   { value: "work", label: "Work/Study", icon: <Calendar className="h-4 w-4" /> }
 ];
 
-// Mock data for existing activities
-const mockActivities: ActivityEntry[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    activity: "Morning yoga",
-    category: "exercise",
-    duration: 30,
-    moodBefore: 2,
-    moodAfter: 4,
-    notes: "Felt more centered after practice"
-  },
-  {
-    id: "2", 
-    date: "2024-01-14",
-    activity: "Coffee with friends",
-    category: "social",
-    duration: 120,
-    moodBefore: 3,
-    moodAfter: 4,
-    notes: "Great conversation, felt supported"
-  }
-];
 
 export default function ActivityTracking() {
   const navigate = useNavigate();
-  const [activities, setActivities] = useState<ActivityEntry[]>(mockActivities);
+  const { toast } = useToast();
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Form state
   const [activity, setActivity] = useState("");
@@ -70,6 +51,46 @@ export default function ActivityTracking() {
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [moodAfter, setMoodAfter] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedActivities: ActivityEntry[] = data.map(a => ({
+          id: a.id,
+          date: a.date,
+          activity: a.activity,
+          category: a.category,
+          duration: a.duration,
+          moodBefore: a.mood_before,
+          moodAfter: a.mood_after,
+          notes: a.notes || ""
+        }));
+        setActivities(formattedActivities);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load activities",
+        variant: "destructive"
+      });
+    }
+  };
 
   const resetForm = () => {
     setActivity("");
@@ -80,25 +101,55 @@ export default function ActivityTracking() {
     setNotes("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!activity || !category || !duration || moodBefore === null || moodAfter === null) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
       return;
     }
 
-    const newEntry: ActivityEntry = {
-      id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-      activity,
-      category,
-      duration: parseInt(duration),
-      moodBefore,
-      moodAfter,
-      notes
-    };
+    setIsLoading(true);
 
-    setActivities([newEntry, ...activities]);
-    resetForm();
-    setShowAddForm(false);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user logged in");
+
+      const { error } = await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          date: new Date().toISOString().split('T')[0],
+          activity,
+          category,
+          duration: parseInt(duration),
+          mood_before: moodBefore,
+          mood_after: moodAfter,
+          notes: notes || null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Activity added",
+        description: "Your activity has been logged successfully"
+      });
+
+      resetForm();
+      setShowAddForm(false);
+      await fetchActivities();
+    } catch (error) {
+      console.error('Error saving activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save activity",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getMoodIcon = (value: number) => {
@@ -264,8 +315,8 @@ export default function ActivityTracking() {
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={handleSubmit} className="flex-1">
-                  Save Activity
+                <Button onClick={handleSubmit} className="flex-1" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Save Activity"}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -273,6 +324,7 @@ export default function ActivityTracking() {
                     setShowAddForm(false);
                     resetForm();
                   }}
+                  disabled={isLoading}
                 >
                   Cancel
                 </Button>
